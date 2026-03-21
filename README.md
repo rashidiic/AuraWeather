@@ -1,5 +1,4 @@
 # Aura Weather
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/rashidiic/AuraWeather/tree/main)
 
 Aura Weather is a beautiful, modern weather application for iOS built with SwiftUI. It provides a visually rich experience with dynamic backgrounds and particle animations that change based on the current weather conditions and time of day.
 
