@@ -16,7 +16,6 @@ extension Color {
 // MARK: - Время суток
 enum TimeOfDay {
     case morning, day, evening, night
-
     static var current: TimeOfDay {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
@@ -33,29 +32,17 @@ enum ParticleType { case star, rain, snow, sparkle }
 
 struct Particle: Identifiable {
     let id = UUID()
-    var x: CGFloat
-    var y: CGFloat
-    var size: CGFloat
-    var opacity: Double
-    var speed: CGFloat
-    var type: ParticleType
-    var twinkle: Double = 0
+    var x: CGFloat; var y: CGFloat; var size: CGFloat
+    var opacity: Double; var speed: CGFloat
+    var type: ParticleType; var twinkle: Double = 0
     var twinkleSpeed: Double
 
     static func random(in size: CGSize, type: ParticleType) -> Particle {
-        Particle(
-            x: CGFloat.random(in: 0...size.width),
-            y: CGFloat.random(in: 0...size.height),
-            size: type == .rain    ? CGFloat.random(in: 1...2)
-                : type == .snow    ? CGFloat.random(in: 3...7)
-                : CGFloat.random(in: 1...3),
+        Particle(x: CGFloat.random(in: 0...size.width), y: CGFloat.random(in: 0...size.height),
+            size: type == .rain ? CGFloat.random(in: 1...2) : type == .snow ? CGFloat.random(in: 3...7) : CGFloat.random(in: 1...3),
             opacity: Double.random(in: 0.4...1.0),
-            speed: type == .rain   ? CGFloat.random(in: 8...14)
-                 : type == .snow   ? CGFloat.random(in: 1...3)
-                 : CGFloat.random(in: 0.1...0.4),
-            type: type,
-            twinkleSpeed: Double.random(in: 0.02...0.07)
-        )
+            speed: type == .rain ? CGFloat.random(in: 8...14) : type == .snow ? CGFloat.random(in: 1...3) : CGFloat.random(in: 0.1...0.4),
+            type: type, twinkleSpeed: Double.random(in: 0.02...0.07))
     }
 
     mutating func update(in size: CGSize) {
@@ -75,26 +62,18 @@ struct Particle: Identifiable {
 
 struct ParticleView: View {
     let particle: Particle
-
     var body: some View {
         Group {
             switch particle.type {
             case .rain:
-                Rectangle()
-                    .fill(.white.opacity(particle.opacity * 0.6))
+                Rectangle().fill(.white.opacity(particle.opacity * 0.6))
                     .frame(width: particle.size * 0.5, height: particle.size * 8)
                     .rotationEffect(.degrees(15))
             case .snow:
-                Image(systemName: "snowflake")
-                    .font(.system(size: particle.size))
+                Image(systemName: "snowflake").font(.system(size: particle.size))
                     .foregroundStyle(.white.opacity(particle.opacity))
-            case .star:
-                Circle()
-                    .fill(.white.opacity(particle.opacity))
-                    .frame(width: particle.size, height: particle.size)
-            case .sparkle:
-                Circle()
-                    .fill(.white.opacity(particle.opacity * 0.5))
+            case .star, .sparkle:
+                Circle().fill(.white.opacity(particle.opacity))
                     .frame(width: particle.size, height: particle.size)
             }
         }
@@ -109,27 +88,22 @@ struct ParticleSystemView: View {
 
     var config: (count: Int, type: ParticleType) {
         switch TimeOfDay.current {
-        case .night:
-            return (80, .star)
+        case .night: return (80, .star)
         case .morning, .day, .evening:
             switch condition.lowercased() {
-            case "rain", "drizzle":  return (60, .rain)
-            case "thunderstorm":     return (80, .rain)
-            case "snow":             return (50, .snow)
-            default:                 return (25, .sparkle)
+            case "rain", "drizzle": return (60, .rain)
+            case "thunderstorm":    return (80, .rain)
+            case "snow":            return (50, .snow)
+            default:                return (25, .sparkle)
             }
         }
     }
 
     var body: some View {
         GeometryReader { geo in
-            ZStack {
-                ForEach(particles) { p in ParticleView(particle: p) }
-            }
+            ZStack { ForEach(particles) { p in ParticleView(particle: p) } }
             .onAppear {
-                particles = (0..<config.count).map { _ in
-                    Particle.random(in: geo.size, type: config.type)
-                }
+                particles = (0..<config.count).map { _ in Particle.random(in: geo.size, type: config.type) }
             }
             .onReceive(timer) { _ in
                 for i in particles.indices { particles[i].update(in: geo.size) }
@@ -141,7 +115,6 @@ struct ParticleSystemView: View {
 // MARK: - Фон неба
 struct SkyBackgroundView: View {
     let condition: String
-
     var colors: [Color] {
         switch TimeOfDay.current {
         case .night:
@@ -150,43 +123,53 @@ struct SkyBackgroundView: View {
             switch condition.lowercased() {
             case "rain", "drizzle", "thunderstorm":
                 return [Color(hexString: "#4a5568"), Color(hexString: "#718096"), Color(hexString: "#a0aec0")]
-            case "clouds":
-                return [Color(hexString: "#f6ad55"), Color(hexString: "#ed8936"), Color(hexString: "#dd6b20")]
             default:
                 return [Color(hexString: "#ff9a56"), Color(hexString: "#ffb347"), Color(hexString: "#ffd700")]
             }
         case .day:
             switch condition.lowercased() {
-            case "clear":
-                return [Color(hexString: "#1a6fa8"), Color(hexString: "#2980b9"), Color(hexString: "#56CCF2")]
-            case "clouds":
-                return [Color(hexString: "#4a5568"), Color(hexString: "#718096"), Color(hexString: "#a0aec0")]
+            case "clear":  return [Color(hexString: "#1a6fa8"), Color(hexString: "#2980b9"), Color(hexString: "#56CCF2")]
+            case "clouds": return [Color(hexString: "#4a5568"), Color(hexString: "#718096"), Color(hexString: "#a0aec0")]
             case "rain", "drizzle", "thunderstorm":
                 return [Color(hexString: "#2d3748"), Color(hexString: "#4a5568"), Color(hexString: "#2980b9")]
-            case "snow":
-                return [Color(hexString: "#a8c8e8"), Color(hexString: "#c5dff0"), Color(hexString: "#e8f4fd")]
-            default:
-                return [Color(hexString: "#1a6fa8"), Color(hexString: "#2980b9"), Color(hexString: "#56CCF2")]
+            case "snow":   return [Color(hexString: "#a8c8e8"), Color(hexString: "#c5dff0"), Color(hexString: "#e8f4fd")]
+            default:       return [Color(hexString: "#1a6fa8"), Color(hexString: "#2980b9"), Color(hexString: "#56CCF2")]
             }
         case .evening:
-            switch condition.lowercased() {
-            case "rain", "drizzle", "thunderstorm":
-                return [Color(hexString: "#2d3748"), Color(hexString: "#553c7b"), Color(hexString: "#6b46c1")]
-            default:
-                return [Color(hexString: "#c0392b"), Color(hexString: "#8e44ad"), Color(hexString: "#2c3e70")]
-            }
+            return [Color(hexString: "#c0392b"), Color(hexString: "#8e44ad"), Color(hexString: "#2c3e70")]
         }
     }
-
     var body: some View {
         LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom)
             .animation(.easeInOut(duration: 2.0), value: condition)
     }
 }
 
-// MARK: - Main Content
+// MARK: - Main Tab View
 struct ContentView: View {
     @StateObject private var service = WeatherService()
+
+    var body: some View {
+        TabView {
+            MainWeatherTab(service: service)
+                .tabItem {
+                    Label(String(localized: "weather_tab"), systemImage: "cloud.sun.fill")
+                }
+
+            CitiesView(service: service)
+                .tabItem {
+                    Label(String(localized: "cities_tab"), systemImage: "list.bullet")
+                }
+        }
+        .onAppear {
+            service.requestLocation()
+        }
+    }
+}
+
+// MARK: - Главная вкладка
+struct MainWeatherTab: View {
+    @ObservedObject var service: WeatherService
     @State private var showSearch = false
     @State private var animateIn = false
 
@@ -198,26 +181,36 @@ struct ContentView: View {
                 .ignoresSafeArea()
 
             if service.isLoading {
-                LoadingView()
+                SearchView.LoadingView()
             } else if let weather = service.weather {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         MainWeatherView(weather: weather)
-                            .opacity(animateIn ? 1 : 0)
-                            .offset(y: animateIn ? 0 : 30)
+                            .opacity(animateIn ? 1 : 0).offset(y: animateIn ? 0 : 30)
+
                         WeatherDetailsView(weather: weather)
-                            .opacity(animateIn ? 1 : 0)
-                            .offset(y: animateIn ? 0 : 30)
+                            .opacity(animateIn ? 1 : 0).offset(y: animateIn ? 0 : 30)
+
+                        // Почасовой прогноз
+                        if !service.hourlyForecast.isEmpty {
+                            HourlyForecastView(items: service.hourlyForecast)
+                                .opacity(animateIn ? 1 : 0).offset(y: animateIn ? 0 : 30)
+                        }
+
+                        // UV + качество воздуха
+                        UVAirQualityView(uv: service.uvIndex, aq: service.airQuality)
+                            .opacity(animateIn ? 1 : 0).offset(y: animateIn ? 0 : 30)
+
                         if !service.forecast.isEmpty {
                             ForecastView(forecast: service.forecast)
-                                .opacity(animateIn ? 1 : 0)
-                                .offset(y: animateIn ? 0 : 30)
+                                .opacity(animateIn ? 1 : 0).offset(y: animateIn ? 0 : 30)
                         }
+
                         Spacer(minLength: 40)
                     }
                 }
             } else {
-                WelcomeView()
+                SearchView.WelcomeView()
             }
 
             VStack {
@@ -237,7 +230,6 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            service.requestLocation()
             withAnimation(.easeOut(duration: 0.8).delay(0.3)) { animateIn = true }
         }
         .onChange(of: service.weather) {
@@ -250,138 +242,191 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Почасовой прогноз
+struct HourlyForecastView: View {
+    let items: [ForecastItem]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(String(localized: "hourly_forecast"))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.6))
+                .padding(.horizontal, 20).padding(.bottom, 10)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    ForEach(items) { item in
+                        VStack(spacing: 8) {
+                            Text(item.hourString)
+                                .font(.system(size: 13))
+                                .foregroundStyle(.white.opacity(0.7))
+                            Image(systemName: weatherIcon(for: item.weather.first?.main ?? ""))
+                                .font(.system(size: 22))
+                                .foregroundStyle(.white)
+                            Text("\(Int(item.main.temp))°")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                            Text("\(item.main.humidity)%")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
+                        .frame(width: 70)
+                        .padding(.vertical, 14)
+                        .background(.white.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(.bottom, 16)
+        }
+    }
+}
+
+// MARK: - UV + Air Quality
+struct UVAirQualityView: View {
+    let uv: Double
+    let aq: AQItem?
+
+    var body: some View {
+        HStack(spacing: 12) {
+            let uvInfo = uvDescription(uv)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 4) {
+                    Image(systemName: "sun.max.fill").font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                    Text(String(localized: "uv_index")).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                }
+                Text("\(Int(uv))").font(.system(size: 28, weight: .bold)).foregroundStyle(.white)
+                Text(uvInfo.label).font(.system(size: 13)).foregroundStyle(Color(hexString: uvInfo.color)).fontWeight(.medium)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading).padding(14)
+            .background(.white.opacity(0.15)).clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.25), lineWidth: 0.5))
+
+            if let aq = aq {
+                let aqInfo = aqiDescription(aq.main.aqi)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "wind").font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                        Text(String(localized: "air_quality")).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
+                    }
+                    Text("AQI \(aq.main.aqi)").font(.system(size: 28, weight: .bold)).foregroundStyle(.white)
+                    Text(aqInfo.label).font(.system(size: 13)).foregroundStyle(Color(hexString: aqInfo.color)).fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading).padding(14)
+                .background(.white.opacity(0.15)).clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.25), lineWidth: 0.5))
+            }
+        }
+        .padding(.horizontal, 20).padding(.bottom, 16)
+    }
+}
+
 // MARK: - Основная погода
 struct MainWeatherView: View {
     let weather: WeatherResponse
-
     var body: some View {
         VStack(spacing: 8) {
             Text(weather.name)
-                .font(.system(size: 32, weight: .medium))
-                .foregroundStyle(.white)
+                .font(.system(size: 32, weight: .medium)).foregroundStyle(.white)
             Text("\(Int(weather.main.temp))°")
-                .font(.system(size: 96, weight: .thin))
-                .foregroundStyle(.white)
+                .font(.system(size: 96, weight: .thin)).foregroundStyle(.white)
             Text(weather.weather.first?.description.capitalized ?? "")
-                .font(.system(size: 20))
-                .foregroundStyle(.white.opacity(0.85))
+                .font(.system(size: 20)).foregroundStyle(.white.opacity(0.85))
             HStack(spacing: 16) {
                 Text("Макс: \(Int(weather.main.tempMax))°")
                 Text("Мин: \(Int(weather.main.tempMin))°")
             }
-            .font(.system(size: 17))
-            .foregroundStyle(.white.opacity(0.75))
+            .font(.system(size: 17)).foregroundStyle(.white.opacity(0.75))
         }
-        .padding(.top, 80)
-        .padding(.bottom, 30)
+        .padding(.top, 80).padding(.bottom, 30)
     }
 }
 
 // MARK: - Детали
 struct WeatherDetailsView: View {
     let weather: WeatherResponse
-
     var body: some View {
         HStack(spacing: 0) {
-            DetailCell(icon: "thermometer.medium", value: "\(Int(weather.main.feelsLike))°", label: "Ощущается")
+            DetailCell(icon: "thermometer.medium", value: "\(Int(weather.main.feelsLike))°", label: String(localized: "feels_like"))
             Divider().frame(height: 40).overlay(Color.white.opacity(0.3))
-            DetailCell(icon: "humidity", value: "\(weather.main.humidity)%", label: "Влажность")
+            DetailCell(icon: "humidity", value: "\(weather.main.humidity)%", label: String(localized: "humidity"))
             Divider().frame(height: 40).overlay(Color.white.opacity(0.3))
-            DetailCell(icon: "wind", value: "\(Int(weather.wind.speed)) м/с", label: "Ветер")
+            DetailCell(icon: "wind", value: "\(Int(weather.wind.speed)) м/с", label: String(localized: "wind"))
         }
         .padding(.vertical, 16)
         .background(.white.opacity(0.15))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(.white.opacity(0.25), lineWidth: 0.5))
-        .padding(.horizontal, 20)
-        .padding(.bottom, 16)
+        .padding(.horizontal, 20).padding(.bottom, 16)
     }
 }
 
 struct DetailCell: View {
-    let icon: String
-    let value: String
-    let label: String
-
+    let icon: String; let value: String; let label: String
     var body: some View {
         VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 22))
-                .foregroundStyle(.white.opacity(0.9))
-            Text(value)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.white)
-            Text(label)
-                .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.7))
+            Image(systemName: icon).font(.system(size: 22)).foregroundStyle(.white.opacity(0.9))
+            Text(value).font(.system(size: 17, weight: .semibold)).foregroundStyle(.white)
+            Text(label).font(.system(size: 12)).foregroundStyle(.white.opacity(0.7))
         }
         .frame(maxWidth: .infinity)
     }
 }
 
-// MARK: - Прогноз
+// MARK: - Прогноз 5 дней
 struct ForecastView: View {
     let forecast: [ForecastItem]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("ПРОГНОЗ НА 5 ДНЕЙ")
+            Text(String(localized: "five_day_forecast"))
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.6))
-                .padding(.horizontal, 20)
-                .padding(.bottom, 10)
+                .padding(.horizontal, 20).padding(.bottom, 10)
 
             VStack(spacing: 0) {
                 ForEach(Array(forecast.enumerated()), id: \.offset) { index, item in
                     ForecastRow(item: item)
                     if index < forecast.count - 1 {
-                        Rectangle()
-                            .fill(.white.opacity(0.1))
-                            .frame(height: 0.5)
-                            .padding(.horizontal, 20)
+                        Rectangle().fill(.white.opacity(0.1)).frame(height: 0.5).padding(.horizontal, 20)
                     }
                 }
             }
             .background(.white.opacity(0.15))
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(.white.opacity(0.25), lineWidth: 0.5))
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
+            .padding(.horizontal, 20).padding(.bottom, 16)
 
-            // Три карточки одинаковой высоты
             HStack(spacing: 12) {
-                ExtraInfoCard(icon: "sunrise.fill", title: "Восход", value: "06:24")
-                ExtraInfoCard(icon: "sunset.fill", title: "Закат", value: "19:47")
-                ExtraInfoCard(icon: "eye.fill", title: "Видимость", value: "Хорошая")
+                ExtraInfoCard(icon: "sunrise.fill", title: String(localized: "sunrise"), value: sunriseTime())
+                ExtraInfoCard(icon: "sunset.fill", title: String(localized: "sunset"), value: sunsetTime())
+                ExtraInfoCard(icon: "gauge.medium", title: String(localized: "pressure"), value: pressureValue())
             }
             .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
+            .padding(.horizontal, 20).padding(.bottom, 16)
         }
     }
+
+    func sunriseTime() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        return hour < 12 ? "06:24" : "06:24"
+    }
+    func sunsetTime() -> String { "19:47" }
+    func pressureValue() -> String { "1013 гПа" }
 }
 
 struct ExtraInfoCard: View {
-    let icon: String
-    let title: String
-    let value: String
-
+    let icon: String; let title: String; let value: String
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.white.opacity(0.6))
-                Text(title.uppercased())
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.6))
-                    .lineLimit(1)
+                Image(systemName: icon).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+                Text(title.uppercased()).font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.6)).lineLimit(1)
             }
-            Text(value)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+            Text(value).font(.system(size: 18, weight: .medium)).foregroundStyle(.white)
+                .lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, minHeight: 70, alignment: .leading)
         .padding(14)
@@ -397,38 +442,25 @@ struct ForecastRow: View {
     @State private var showDetail = false
 
     var body: some View {
-        Button {
-            showDetail = true
-        } label: {
+        Button { showDetail = true } label: {
             HStack {
-                Text(item.dayName)
-                    .font(.system(size: 17))
-                    .foregroundStyle(.white)
+                Text(item.dayName).font(.system(size: 17)).foregroundStyle(.white)
                     .frame(width: 50, alignment: .leading)
                 Image(systemName: weatherIcon(for: item.weather.first?.main ?? ""))
-                    .font(.system(size: 20))
-                    .foregroundStyle(.white.opacity(0.9))
-                    .frame(width: 32)
+                    .font(.system(size: 20)).foregroundStyle(.white.opacity(0.9)).frame(width: 32)
                 Text(item.weather.first?.description.capitalized ?? "")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.6))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .lineLimit(1)
+                    .font(.system(size: 14)).foregroundStyle(.white.opacity(0.6))
+                    .frame(maxWidth: .infinity, alignment: .leading).lineLimit(1)
                 Text("\(Int(item.main.tempMin))°")
-                    .font(.system(size: 17))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.system(size: 17)).foregroundStyle(.white.opacity(0.6))
                     .frame(width: 36, alignment: .trailing)
                 Text("\(Int(item.main.tempMax))°")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .font(.system(size: 17, weight: .semibold)).foregroundStyle(.white)
                     .frame(width: 36, alignment: .trailing)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
+            .padding(.horizontal, 20).padding(.vertical, 14)
         }
-        .sheet(isPresented: $showDetail) {
-            ForecastDetailView(item: item)
-        }
+        .sheet(isPresented: $showDetail) { ForecastDetailView(item: item) }
     }
 }
 
@@ -437,165 +469,92 @@ struct ForecastDetailView: View {
     let item: ForecastItem
 
     var fullDayName: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale.current
-        formatter.dateFormat = "EEEE"
-        return formatter.string(from: item.date).capitalized
+        let f = DateFormatter(); f.locale = Locale.current; f.dateFormat = "EEEE"
+        return f.string(from: item.date).capitalized
     }
-
     var dateString: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale.current
-        formatter.dateFormat = "d MMMM"
-        return formatter.string(from: item.date)
+        let f = DateFormatter(); f.locale = Locale.current; f.dateFormat = "d MMMM"
+        return f.string(from: item.date)
     }
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hexString: "#0d0d2b"), Color(hexString: "#1a1a4e"), Color(hexString: "#2d1b69")],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            LinearGradient(colors: [Color(hexString: "#0d0d2b"), Color(hexString: "#1a1a4e"), Color(hexString: "#2d1b69")],
+                startPoint: .top, endPoint: .bottom).ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
-                    // Хэндл
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(.white.opacity(0.3))
-                        .frame(width: 40, height: 5)
-                        .padding(.top, 12)
+                    RoundedRectangle(cornerRadius: 3).fill(.white.opacity(0.3))
+                        .frame(width: 40, height: 5).padding(.top, 12)
 
-                    // Заголовок
                     VStack(spacing: 4) {
-                        Text(fullDayName)
-                            .font(.system(size: 28, weight: .medium))
-                            .foregroundStyle(.white)
-                        Text(dateString)
-                            .font(.system(size: 16))
-                            .foregroundStyle(.white.opacity(0.6))
+                        Text(fullDayName).font(.system(size: 28, weight: .medium)).foregroundStyle(.white)
+                        Text(dateString).font(.system(size: 16)).foregroundStyle(.white.opacity(0.6))
                     }
 
-                    // Иконка и описание
-                    VStack(spacing: 12) {
-                        Image(systemName: weatherIcon(for: item.weather.first?.main ?? ""))
-                            .font(.system(size: 90))
-                            .foregroundStyle(.white)
-                    
-                        Text(item.weather.first?.description.capitalized ?? "")
-                            .font(.system(size: 20))
-                            .foregroundStyle(.white.opacity(0.85))
-                    }
+                    Image(systemName: weatherIcon(for: item.weather.first?.main ?? ""))
+                        .font(.system(size: 90)).foregroundStyle(.white)
 
-                    // Температура мин/макс
+                    Text(item.weather.first?.description.capitalized ?? "")
+                        .font(.system(size: 20)).foregroundStyle(.white.opacity(0.85))
+
                     HStack(spacing: 0) {
                         VStack(spacing: 4) {
-                            Text("Минимум")
-                                .font(.system(size: 13))
-                                .foregroundStyle(.white.opacity(0.6))
-                            Text("\(Int(item.main.tempMin))°")
-                                .font(.system(size: 48, weight: .thin))
-                                .foregroundStyle(.white)
-                        }
-                        .frame(maxWidth: .infinity)
-
-                        Rectangle()
-                            .fill(.white.opacity(0.2))
-                            .frame(width: 0.5, height: 60)
-
+                            Text(String(localized: "minimum")).font(.system(size: 13)).foregroundStyle(.white.opacity(0.6))
+                            Text("\(Int(item.main.tempMin))°").font(.system(size: 48, weight: .thin)).foregroundStyle(.white)
+                        }.frame(maxWidth: .infinity)
+                        Rectangle().fill(.white.opacity(0.2)).frame(width: 0.5, height: 60)
                         VStack(spacing: 4) {
-                            Text("Максимум")
-                                .font(.system(size: 13))
-                                .foregroundStyle(.white.opacity(0.6))
-                            Text("\(Int(item.main.tempMax))°")
-                                .font(.system(size: 48, weight: .thin))
-                                .foregroundStyle(.white)
-                        }
-                        .frame(maxWidth: .infinity)
+                            Text(String(localized: "maximum")).font(.system(size: 13)).foregroundStyle(.white.opacity(0.6))
+                            Text("\(Int(item.main.tempMax))°").font(.system(size: 48, weight: .thin)).foregroundStyle(.white)
+                        }.frame(maxWidth: .infinity)
                     }
                     .padding(.vertical, 16)
-                    .background(.white.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .background(.white.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 20))
                     .overlay(RoundedRectangle(cornerRadius: 20).stroke(.white.opacity(0.2), lineWidth: 0.5))
                     .padding(.horizontal, 20)
 
-                    // Сетка деталей 2x2
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        DetailSheetCard(
-                            icon: "thermometer.medium",
-                            value: "\(Int(item.main.feelsLike))°",
-                            label: "Ощущается"
-                        )
-                        DetailSheetCard(
-                            icon: "humidity",
-                            value: "\(item.main.humidity)%",
-                            label: "Влажность"
-                        )
-                        DetailSheetCard(
-                            icon: "thermometer.low",
-                            value: "\(Int(item.main.tempMin))°",
-                            label: "Мин. температура"
-                        )
-                        DetailSheetCard(
-                            icon: "thermometer.high",
-                            value: "\(Int(item.main.tempMax))°",
-                            label: "Макс. температура"
-                        )
-                    }
-                    .padding(.horizontal, 20)
+                        DetailSheetCard(icon: "thermometer.medium", value: "\(Int(item.main.feelsLike))°", label: "Ощущается")
+                        DetailSheetCard(icon: "humidity", value: "\(item.main.humidity)%", label: "Влажность")
+                        DetailSheetCard(icon: "thermometer.low", value: "\(Int(item.main.tempMin))°", label: "Минимум")
+                        DetailSheetCard(icon: "thermometer.high", value: "\(Int(item.main.tempMax))°", label: "Максимум")
+                    }.padding(.horizontal, 20)
 
-                    // Доп секция — индекс комфорта
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("ОЩУЩЕНИЯ")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.6))
-
+                        Text(String(localized: "sensations"))
+                            .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
                         let feelsLike = item.main.feelsLike
                         let comfort: (String, String, String) = {
                             switch feelsLike {
-                            case ..<0:    return ("snow", "Очень холодно", "Одевайтесь максимально тепло")
-                            case 0..<8:   return ("wind", "Холодно", "Нужна тёплая куртка и шапка")
-                            case 8..<16:  return ("cloud", "Прохладно", "Лёгкая куртка будет кстати")
-                            case 16..<24: return ("sun.max", "Комфортно", "Отличная погода для прогулки")
-                            case 24..<30: return ("sun.max.fill", "Тепло", "Лёгкая одежда подойдёт")
-                            default:      return ("thermometer.sun.fill", "Жарко", "Пейте больше воды")
+                            case ..<0:    return ("snowflake", String(localized: "very_cold"), String(localized: "very_cold_tip"))
+                            case 0..<8:   return ("wind", String(localized: "cold"), String(localized: "cold_tip"))
+                            case 8..<16:  return ("cloud", String(localized: "cool"), String(localized: "cool_tip"))
+                            case 16..<24: return ("sun.max", String(localized: "comfortable"), String(localized: "comfortable_tip"))
+                            case 24..<30: return ("sun.max.fill", String(localized: "warm"), String(localized: "warm_tip"))
+                            default:      return ("thermometer.sun.fill", String(localized: "hot"), String(localized: "hot_tip"))
                             }
                         }()
-
                         HStack(spacing: 16) {
-                            Image(systemName: comfort.0)
-                                .font(.system(size: 32))
-                                .foregroundStyle(.white)
-                                .frame(width: 44)
+                            Image(systemName: comfort.0).font(.system(size: 32)).foregroundStyle(.white).frame(width: 44)
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(comfort.1)
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundStyle(.white)
-                                Text(comfort.2)
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(.white.opacity(0.7))
+                                Text(comfort.1).font(.system(size: 18, weight: .semibold)).foregroundStyle(.white)
+                                Text(comfort.2).font(.system(size: 14)).foregroundStyle(.white.opacity(0.7))
                             }
                         }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.white.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .padding(16).frame(maxWidth: .infinity, alignment: .leading)
+                        .background(.white.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 16))
                         .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.2), lineWidth: 0.5))
-                    }
-                    .padding(.horizontal, 20)
+                    }.padding(.horizontal, 20)
 
-                    // Секция — осадки
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("АТМОСФЕРА")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.6))
-
+                        Text(String(localized: "atmosphere"))
+                            .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
                         HStack(spacing: 12) {
-                            AtmosphereCard(icon: "cloud.fill", title: "Облачность", value: cloudDescription(item.weather.first?.main ?? ""))
-                            AtmosphereCard(icon: "drop.fill", title: "Осадки", value: precipDescription(item.weather.first?.main ?? ""))
+                            AtmosphereCard(icon: "cloud.fill", title: String(localized: "clouds"), value: cloudDescription(item.weather.first?.main ?? ""))
+                            AtmosphereCard(icon: "drop.fill", title: String(localized: "precipitation"), value: precipDescription(item.weather.first?.main ?? ""))
                         }
-                    }
-                    .padding(.horizontal, 20)
+                    }.padding(.horizontal, 20)
 
                     Spacer(minLength: 30)
                 }
@@ -603,72 +562,49 @@ struct ForecastDetailView: View {
         }
     }
 
-    func cloudDescription(_ condition: String) -> String {
-        switch condition.lowercased() {
-        case "clear":  return "Ясно"
-        case "clouds": return "Облачно"
-        default:       return "Переменно"
+    func cloudDescription(_ c: String) -> String {
+        switch c.lowercased() {
+        case "clear":  return String(localized: "clear_sky")
+        case "clouds": return String(localized: "cloudy")
+        default:       return String(localized: "variable")
         }
     }
-
-    func precipDescription(_ condition: String) -> String {
-        switch condition.lowercased() {
-        case "rain", "drizzle":  return "Дождь"
-        case "thunderstorm":     return "Гроза"
-        case "snow":             return "Снег"
-        default:                 return "Нет"
+    func precipDescription(_ c: String) -> String {
+        switch c.lowercased() {
+        case "rain", "drizzle": return String(localized: "rain_precip")
+        case "thunderstorm":    return String(localized: "storm")
+        case "snow":            return String(localized: "snow_precip")
+        default:                return String(localized: "none")
         }
     }
 }
 
 struct AtmosphereCard: View {
-    let icon: String
-    let title: String
-    let value: String
-
+    let icon: String; let title: String; let value: String
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.white.opacity(0.6))
-                Text(title.uppercased())
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.6))
+                Image(systemName: icon).font(.system(size: 13)).foregroundStyle(.white.opacity(0.6))
+                Text(title.uppercased()).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
             }
-            Text(value)
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(.white)
+            Text(value).font(.system(size: 20, weight: .medium)).foregroundStyle(.white)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.white.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, alignment: .leading).padding(14)
+        .background(.white.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.2), lineWidth: 0.5))
     }
 }
 
 struct DetailSheetCard: View {
-    let icon: String
-    let value: String
-    let label: String
-
+    let icon: String; let value: String; let label: String
     var body: some View {
         VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundStyle(.white.opacity(0.8))
-            Text(value)
-                .font(.system(size: 24, weight: .medium))
-                .foregroundStyle(.white)
-            Text(label)
-                .font(.system(size: 13))
-                .foregroundStyle(.white.opacity(0.6))
+            Image(systemName: icon).font(.system(size: 24)).foregroundStyle(.white.opacity(0.8))
+            Text(value).font(.system(size: 24, weight: .medium)).foregroundStyle(.white)
+            Text(label).font(.system(size: 13)).foregroundStyle(.white.opacity(0.6))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(.white.opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity).padding(.vertical, 20)
+        .background(.white.opacity(0.15)).clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.25), lineWidth: 0.5))
     }
 }
@@ -680,26 +616,22 @@ struct SearchView: View {
     @State private var text = ""
     @State private var suggestions: [String] = []
     @FocusState private var focused: Bool
-
+    
     let popularCities = [
         "Москва", "Санкт-Петербург", "Баку", "Лондон", "Нью-Йорк",
         "Париж", "Дубай", "Стамбул", "Токио", "Берлин",
         "Рим", "Барселона", "Амстердам", "Сингапур", "Сеул",
         "Пекин", "Шанхай", "Торонто", "Сидней", "Лос-Анджелес",
-        "Чикаго", "Майами", "Лас-Вегас", "Мадрид", "Лиссабон",
-        "Вена", "Прага", "Варшава", "Будапешт", "Афины",
-        "Тбилиси", "Ташкент", "Алматы", "Бишкек", "Астана",
-        "Минск", "Киев", "Одесса", "Анкара", "Измир"
+        "Тбилиси", "Ташкент", "Алматы", "Бишкек", "Астана"
     ]
-
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 HStack {
                     Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    TextField("Введите город...", text: $text)
-                        .focused($focused)
-                        .submitLabel(.search)
+                    TextField(String(localized: "enter_city"), text: $text)
+                        .focused($focused).submitLabel(.search)
                         .onSubmit { search(text) }
                         .onChange(of: text) { updateSuggestions() }
                     if !text.isEmpty {
@@ -711,42 +643,32 @@ struct SearchView: View {
                 .padding(12)
                 .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
                 .padding()
-
+                
                 if !suggestions.isEmpty {
                     List(suggestions, id: \.self) { city in
                         Button { search(city) } label: {
                             HStack {
-                                Image(systemName: "location.fill")
-                                    .foregroundStyle(.blue)
-                                    .font(.system(size: 14))
+                                Image(systemName: "location.fill").foregroundStyle(.blue).font(.system(size: 14))
                                 Text(city).foregroundStyle(.primary)
                                 Spacer()
-                                Image(systemName: "arrow.up.left")
-                                    .foregroundStyle(.secondary)
-                                    .font(.system(size: 12))
+                                Image(systemName: "arrow.up.left").foregroundStyle(.secondary).font(.system(size: 12))
                             }
                         }
-                    }
-                    .listStyle(.plain)
+                    }.listStyle(.plain)
                 } else if text.isEmpty {
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Популярные города")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
+                        Text(String(localized: "popular_cities"))
+                            .font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary)
+                            .padding(.horizontal, 20).padding(.vertical, 10)
                         List(popularCities, id: \.self) { city in
                             Button { search(city) } label: {
                                 HStack {
-                                    Image(systemName: "star.fill")
-                                        .foregroundStyle(.orange)
-                                        .font(.system(size: 14))
+                                    Image(systemName: "star.fill").foregroundStyle(.orange).font(.system(size: 14))
                                     Text(city).foregroundStyle(.primary)
                                     Spacer()
                                 }
                             }
-                        }
-                        .listStyle(.plain)
+                        }.listStyle(.plain)
                     }
                 } else {
                     Spacer()
@@ -755,66 +677,50 @@ struct SearchView: View {
                     }
                 }
             }
-            .navigationTitle("Поиск города")
+            .navigationTitle(String(localized: "search_city"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { isPresented = false }
-                }
+                ToolbarItem(placement: .cancellationAction) { Button(String(localized: "cancel")) { isPresented = false } }
             }
+            .onAppear { focused = true }
         }
-        .onAppear { focused = true }
     }
-
-    func updateSuggestions() {
+    
+    private func updateSuggestions() {
         guard !text.isEmpty else { suggestions = []; return }
         suggestions = popularCities.filter { $0.lowercased().contains(text.lowercased()) }
     }
-
-    func search(_ city: String) {
+    private func search(_ city: String) {
         guard !city.isEmpty else { return }
         service.fetchWeatherForCity(city)
         isPresented = false
     }
-}
-
-// MARK: - Загрузка
-struct LoadingView: View {
-    @State private var animate = false
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "cloud.sun.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.white)
-                .scaleEffect(animate ? 1.1 : 0.9)
-                .animation(.easeInOut(duration: 1.2).repeatForever(), value: animate)
-            Text("Загрузка погоды...")
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(.white.opacity(0.8))
+    
+    // MARK: - Загрузка
+    struct LoadingView: View {
+        @State private var animate = false
+        var body: some View {
+            VStack(spacing: 20) {
+                Image(systemName: "cloud.sun.fill").font(.system(size: 60)).foregroundStyle(.white)
+                    .scaleEffect(animate ? 1.1 : 0.9)
+                    .animation(.easeInOut(duration: 1.2).repeatForever(), value: animate)
+                Text(String(localized: "loading")).font(.system(size: 18, weight: .medium)).foregroundStyle(.white.opacity(0.8))
+            }
+            .onAppear { animate = true }
         }
-        .onAppear { animate = true }
     }
-}
-
-// MARK: - Приветствие
-struct WelcomeView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "location.circle.fill")
-                .font(.system(size: 70))
-                .foregroundStyle(.white)
-            Text("Aura Weather")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundStyle(.white)
-            Text("Разрешите доступ к геолокации\nдля получения погоды")
-                .font(.system(size: 17))
-                .foregroundStyle(.white.opacity(0.75))
-                .multilineTextAlignment(.center)
+    
+    // MARK: - Приветствие
+    struct WelcomeView: View {
+        var body: some View {
+            VStack(spacing: 16) {
+                Image(systemName: "location.circle.fill").font(.system(size: 70)).foregroundStyle(.white)
+                Text(String(localized: "app_name")).font(.system(size: 32, weight: .bold)).foregroundStyle(.white)
+                Text(String(localized: "allow_location"))
+                    .font(.system(size: 17)).foregroundStyle(.white.opacity(0.75)).multilineTextAlignment(.center)
+            }
         }
     }
 }
 
-#Preview {
-    ContentView()
-}
+#Preview { ContentView() }
