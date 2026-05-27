@@ -1,70 +1,104 @@
+
 # Aura Weather
 
-Aura Weather is a beautiful, modern weather application for iOS built with SwiftUI. It provides a visually rich experience with dynamic backgrounds and particle animations that change based on the current weather conditions and time of day.
+Aura Weather is a beautiful, modern weather application for iOS built with SwiftUI. Now with Version 2, Aura Weather brings a richer experience, multi-language support, saved cities, enhanced hourly forecasts, air quality details, and smart notifications.
 
-## Features
+---
 
-- **Dynamic UI:** The background gradient and particle effects adapt to the weather (clear, clouds, rain, snow) and the time of day (morning, day, evening, night).
-- **Current Weather:** Get instant access to the current temperature, weather description, and high/low for the day.
-- **Detailed Information:** View supplementary data such as "feels like" temperature, humidity, and wind speed.
-- **5-Day Forecast:** Plan ahead with a summarized forecast for the next five days.
-- **In-Depth Daily View:** Tap on a day in the forecast to see a detailed view, including a comfort index, atmospheric conditions, and an hourly temperature breakdown.
-- **Location-Based & Search:** Automatically fetches weather for your current location or allows you to search for any city worldwide.
-- **Animated Effects:** Includes smooth animations for rain, snow, and twinkling stars to create an immersive "aura" for the current weather.
+## What’s New in Version 2
+
+- **Multi-language Support:** Available in English and Russian, using iOS localization.
+- **Saved Cities Tab:** Fully-featured Cities interface — save, view, and manage favorite locations with real-time weather updates for each.
+- **Hourly Weather Forecast:** View detailed hourly breakdowns of temperature and conditions.
+- **UV Index & Air Quality:** Stay safe with health-centric metrics derived right in the app.
+- **Smart Weather Notifications:** Get alerts for rain, cold snaps, or heat waves based on your location or chosen city.
+- **Modernized UI:** Updated, visually appealing card layouts with improved accessibility and polish.
+- **Improved Architecture:** Clean, maintainable, and testable SwiftUI + Combine structure with expanded localization capabilities.
+- **Persistent Favorites:** Saved cities are stored locally and preserved across app launches.
+- **Enhanced Data Sources:** Real-time fetch and display of UV Index and Air Quality Index from OpenWeather.
+
+---
+
+## Key Features
+
+- **Live Animated Interface:** Dynamic backgrounds and particle effects that adapt to weather conditions and time of day.
+- **Current & Forecast Weather:** Instant access to present conditions, “feels like”, humidity, wind, and a 5-day forecast, including detailed daily and hourly views.
+- **Location and City Search:** Instantly get weather for your current location or search for any world city.
+- **Health & Comfort Insights:** View UV levels, air quality, pressure, and tailored comfort tips.
+- **Notifications:** Timely push notifications for rain, cold, or extreme heat.
+
+---
 
 ## Technical Stack
 
-- **Framework:** SwiftUI
-- **Language:** Swift
-- **Concurrency:** `async/await` for modern, clean asynchronous network calls.
-- **Location:** CoreLocation for fetching the user's geographical coordinates.
-- **Networking:** `URLSession` to communicate with the weather API.
-- **API:** [OpenWeatherMap](https://openweathermap.org/) for weather and forecast data.
+- **Language & UI:** Swift, SwiftUI
+- **Reactive Model:** Combine (`@ObservableObject`, `@Published`)
+- **Location:** CoreLocation (with permissions and error fallback)
+- **Networking:** URLSession, async/await
+- **Notifications:** UserNotifications framework
+- **Local Storage:** UserDefaults for favorites
+- **API Provider:** [OpenWeatherMap](https://openweathermap.org/)
+- **Internationalization:** Localizable.strings (English and Russian)
 
-## Architecture
+---
 
-The app follows a modern SwiftUI architecture, with the logic and UI clearly separated.
+## App Architecture
 
--   **`WeatherService.swift`**: An `ObservableObject` that acts as the single source of truth for all weather data. It is responsible for:
-    -   Requesting location permissions and fetching coordinates via `CLLocationManager`.
-    -   Making asynchronous API calls to OpenWeatherMap using `async/await`.
-    -   Handling API responses, decoding JSON into the model objects, and managing loading/error states.
-    -   Providing a fallback location if geolocation fails.
+- **WeatherService.swift:** Manages all weather, forecast, air quality, and UV index data, saved cities, local storage, and permission logic.
+- **ContentView.swift:** Tab-based interface for Weather and Saved Cities.
+- **CitiesView.swift:** UI for managing favorite/saved locations.
+- **WeatherModels.swift:** Codable models for weather, forecast, air quality, UV, and city data.
+- **Localizable.strings:** For multi-language UI.
 
--   **`ContentView.swift`**: The main view of the application. It observes `WeatherService` and updates the UI whenever the weather data changes. It is composed of several specialized subviews:
-    -   `SkyBackgroundView`: Renders the animated background gradient based on the weather and time.
-    -   `ParticleSystemView`: Manages and animates the particle effects (rain, snow, stars).
-    -   `MainWeatherView`: Displays the primary weather information (city, temperature, condition).
-    -   `WeatherDetailsView`: A card showing details like humidity and wind.
-    -   `ForecastView`: A list presenting the 5-day forecast.
-    -   `SearchView`: A modal sheet for finding weather by city name.
-    -   `ForecastDetailView`: A detailed modal sheet for a specific day's forecast.
-
--   **`WeatherModels.swift`**: Contains the `Codable` data structures that map directly to the JSON responses from the OpenWeatherMap API.
+---
 
 ## Getting Started
 
-To run this project locally, you will need an API key from OpenWeatherMap.
-
-1.  **Clone the repository:**
+1. **Clone the repository:**
     ```sh
     git clone https://github.com/rashidiic/AuraWeather.git
     cd AuraWeather
     ```
 
-2.  **Get an API Key:**
-    -   Sign up for a free account at [OpenWeatherMap](https://openweathermap.org/).
-    -   Navigate to the "API keys" tab and get your key.
+2. **Get an API Key:**
+    - Sign up at [OpenWeatherMap](https://openweathermap.org/) and obtain your key.
 
-3.  **Add the API Key:**
-    -   Open the project in Xcode.
-    -   Navigate to the `WeatherService.swift` file.
-    -   Replace the placeholder value of the `apiKey` constant with your own key:
-        ```swift
-        private let apiKey = "YOUR_API_KEY_HERE"
-        ```
+3. **Add the API Key:**
+    - In the Xcode project, open `WeatherService.swift`.
+    - Replace the placeholder in
+      ```swift
+      private let apiKey = "YOUR_API_KEY_HERE"
+      ```
+      with your API Key.
 
-4.  **Build and Run:**
-    -   Open `AuraWeather.xcodeproj` in Xcode.
-    -   Select a simulator or a connected iOS device.
-    -   Press the "Run" button (▶) to build and launch the application.
+4. **Build and Run:**
+    - Open `AuraWeather.xcodeproj` in Xcode.
+    - Select your simulator or device, and run the app.
+
+---
+
+## Screenshots
+
+![Detailed daily weather view](screenshots/screenshot2.png)
+*Detailed daily weather view (Version 2)*
+
+![Main screen with hourly forecast, UV, and AQI](screenshots/screenshot1.png)
+*Main screen with hourly forecast, UV, and AQI support (Version 2)*
+
+![image1](image1)
+*Detailed daily weather view (Version 2)*
+
+![image2](image2)
+*Main screen with hourly forecast, UV, and AQI support (Version 2)*
+
+---
+
+## Credits
+
+Weather data provided by [OpenWeatherMap](https://openweathermap.org/)
+
+---
+
+## License
+
+Aura Weather is released under the MIT license.
