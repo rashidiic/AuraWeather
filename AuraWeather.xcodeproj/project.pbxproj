@@ -6,14 +6,24 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0EF60C162FC7A0BA00A06A22 /* README 2.md in Resources */ = {isa = PBXBuildFile; fileRef = 0EF60C0D2FC7A0BA00A06A22 /* README 2.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		0E950BCE2F6F2B1D0015018C /* AuraWeather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraWeather.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0EF60C0D2FC7A0BA00A06A22 /* README 2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "README 2.md"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0E950BD02F6F2B1D0015018C /* AuraWeather */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AuraWeather;
+			sourceTree = "<group>";
+		};
+		0EF60C1E2FC7A0DD00A06A22 /* screenshots */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = screenshots;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,8 +42,10 @@
 		0E950BC52F6F2B1D0015018C = {
 			isa = PBXGroup;
 			children = (
+				0EF60C0D2FC7A0BA00A06A22 /* README 2.md */,
 				0E950BD02F6F2B1D0015018C /* AuraWeather */,
 				0E950BCF2F6F2B1D0015018C /* Products */,
+				0EF60C1E2FC7A0DD00A06A22 /* screenshots */,
 			);
 			sourceTree = "<group>";
 		};
@@ -62,6 +74,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				0E950BD02F6F2B1D0015018C /* AuraWeather */,
+				0EF60C1E2FC7A0DD00A06A22 /* screenshots */,
 			);
 			name = AuraWeather;
 			packageProductDependencies = (
@@ -110,6 +123,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EF60C162FC7A0BA00A06A22 /* README 2.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
